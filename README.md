@@ -30,7 +30,7 @@ Instead of extending these classes it is also possible to use the generic classe
 ## Building the Library
 The library has only been tested on Ubuntu 16.04.
 
-In the following examples $(PLADAPT) refers to the top-level directory of this distribution, where this README is.
+In the following examples `$PLADAPT` refers to the top-level directory of this distribution, where this README is.
 
 ### Dependencies
 To install the main dependencies for compiling the library use this command:
