@@ -1,0 +1,16 @@
+CXXFLAGS=-std=c++11 -O3 -Wall -fmessage-length=0
+
+OBJS=main.o Simulation.o
+LDLIBS=-ldartam
+TARGET=dartsim
+CPPFLAGS=-I../dartam/include -I../../../include
+LDFLAGS=-L../dartam/build/src/.libs
+
+all: $(TARGET)
+
+
+$(TARGET): $(OBJS)
+	$(CXX) -o $(TARGET) $(OBJS) $(LDFLAGS) $(LDLIBS)
+
+clean:
+	 rm -f $(OBJS) $(TARGET)
