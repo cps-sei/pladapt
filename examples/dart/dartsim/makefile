@@ -8,6 +8,8 @@ LDFLAGS=-L../dartam/build/src/.libs
 
 all: $(TARGET)
 
+debug: CXXFLAGS += -g
+debug: $(TARGET)
 
 $(TARGET): $(OBJS)
 	$(CXX) -o $(TARGET) $(OBJS) $(LDFLAGS) $(LDLIBS)
