@@ -38,8 +38,13 @@ public:
     	SDPAdaptationManager::initialize(std::static_pointer_cast<const ConfigurationManager, const GenericConfigurationManager>(configMgr),
     			YAML::Load(YAMLParams));
     }
-    virtual std::vector<std::string> evaluate(const GenericConfiguration& currentConfigObj, const EnvironmentDTMCPartitioned& envDTMC,
-    		const GenericUtilityFunction& utilityFunction, unsigned horizon) {
+
+    /*
+     * we're changing the return type, so we cannot simple override evaluate()
+     * we use rename in SWIG to change the name back to evaluate()
+     */
+    virtual std::vector<std::string> evaluateWrapper(const Configuration& currentConfigObj, const EnvironmentDTMCPartitioned& envDTMC,
+    		const UtilityFunction& utilityFunction, unsigned horizon) {
     	// need to convert result to vector
     	auto tactics = SDPAdaptationManager::evaluate(currentConfigObj, envDTMC, utilityFunction, horizon);
     	std::vector<std::string> result(tactics.begin(), tactics.end());

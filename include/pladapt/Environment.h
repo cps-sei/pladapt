@@ -33,6 +33,13 @@ class Environment {
 public:
 
 	/**
+	 * Enum for down-casting in Java
+	 *
+	 * To avoid using RTTI and still be able to down-cast correctly in Java
+	 */
+	enum EnvironmentClass { C_ENVIRONMENT, C_JOINT_ENVIRONMENT, C_GENERIC_ENVIRONMENT };
+
+	/**
 	 * Number of components of the environment state
 	 *
 	 * This is trivial for all subclasses except for JointEnvironment
@@ -60,6 +67,8 @@ public:
 	 * @param scalar environment value
 	 */
 	virtual double asDouble() const;
+
+	virtual EnvironmentClass getType() const;
 
     virtual void printOn(std::ostream& os) const = 0;
     friend std::ostream& operator<<(std::ostream& os, const Environment& env);

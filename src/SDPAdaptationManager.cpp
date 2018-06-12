@@ -188,6 +188,10 @@ void SDPAdaptationManager::initialize(std::shared_ptr<const ConfigurationManager
 TacticList SDPAdaptationManager::evaluate(const Configuration& currentConfigObj, const EnvironmentDTMCPartitioned& envDTMC,
 		const UtilityFunction& utilityFunction, unsigned horizon) {
 
+	if (horizon == 0) {
+		throw std::invalid_argument("SDPAdaptationManager::evaluate() called with horizon = 0");
+	}
+
 	/* check if we need to adjust the horizon to the environment size */
 	if ((envDTMC.getNumberOfParts() - 1) < horizon) {
 		if (envDTMC.getNumberOfParts() > 1 && envDTMC.isLastPartFinal()) {
@@ -294,13 +298,14 @@ TacticList SDPAdaptationManager::evaluate(const Configuration& currentConfigObj,
                 unsigned bestNextState = 0; // assume this for now
 #endif
                 double maxUtil = -DBL_MAX;
+                bool firstReachableState = true;
 
                 for (unsigned nextS = 0; nextS < configSpace.size(); nextS++) {
                     if ((t == 0 && !isReachableImmediately(s, nextS))
                             || (t > 0 && !isReachableFromConfig(s, nextS))) {
                         continue;
                     }
-                    double util = 0;
+                    double util = utilityFunction.getAdaptationReward(config, configSpace.getConfiguration(nextS), t);
 
                     unsigned nextPartIndex = min(t + 1, envDTMC.getNumberOfParts() - 1);
                     const DTMCPartitionedStates::Part& nextEnvPart = envDTMC.getPart(nextPartIndex);
@@ -318,16 +323,17 @@ TacticList SDPAdaptationManager::evaluate(const Configuration& currentConfigObj,
                         }
                     }
 
-                    if (util >= maxUtil) {
+                    if (firstReachableState || util >= maxUtil) {
 
                         // for equal utility, prefer the current configuration
-                        if (nextS == currentConfig || util > maxUtil) {
+                        if (firstReachableState || nextS == currentConfig || util > maxUtil) {
                             maxUtil = util;
 #if EXTRACT_POLICY
                             bestNextState = nextS;
 #endif
                         }
                     }
+                    firstReachableState = false;
                 }
 
                 double localUtil = 0;

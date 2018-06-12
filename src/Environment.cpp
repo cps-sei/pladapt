@@ -44,4 +44,8 @@ double Environment::asDouble() const {
 	throw std::domain_error("asDouble() not supported for Environment (subclass)");
 }
 
+Environment::EnvironmentClass Environment::getType() const {
+	return Environment::C_ENVIRONMENT;
+}
+
 } // namespace

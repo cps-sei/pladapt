@@ -41,4 +41,8 @@ bool GenericConfiguration::equals(const Configuration& other) const {
     return false;
 }
 
+Configuration::ConfigurationClass GenericConfiguration::getType() const {
+	return C_GENERIC_CONFIGURATION;
+}
+
 } /* namespace pladapt */

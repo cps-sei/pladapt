@@ -73,6 +73,10 @@ const Environment& JointEnvironment::getComponent(unsigned c) const {
 	return *components[c];
 }
 
+Environment::EnvironmentClass JointEnvironment::getType() const {
+	return Environment::C_JOINT_ENVIRONMENT;
+}
+
 void JointEnvironment::printOn(std::ostream& os) const {
 	os << '[';
 	for (auto env : components) {

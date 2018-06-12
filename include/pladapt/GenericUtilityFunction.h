@@ -35,6 +35,7 @@ public:
 	virtual double getAdditiveUtility(const Configuration& config, const Environment& env, int time) const;
     virtual double getMultiplicativeUtility(const Configuration& config, const Environment& env, int time) const;
     virtual double getFinalReward(const Configuration& config, const Environment& env, int time) const;
+    virtual double getAdaptationReward(const Configuration& from, const Configuration& to, int time) const;
 
     /* these methods take GenericConfiguration and GenericEnvironment
      * to make it easier to use them from Java
@@ -42,6 +43,8 @@ public:
 	virtual double getGenAdditiveUtility(const GenericConfiguration& config, const GenericEnvironment& environment, int time) const;
     virtual double getGenMultiplicativeUtility(const GenericConfiguration& config, const GenericEnvironment& environment, int time) const;
     virtual double getGenFinalReward(const GenericConfiguration& config, const GenericEnvironment& environment, int time) const;
+    virtual double getGenAdaptationReward(const GenericConfiguration& from, const GenericConfiguration& to, int time) const;
+
 };
 
 } /* namespace pladapt */

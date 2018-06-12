@@ -6,7 +6,7 @@ JAVATARGETDIR = src/$(BASENAME)
 TARGETLIB = lib$(WRAPPERNAME).so
 TARGETJAR = $(WRAPPERNAME).jar
 OBJS = $(WRAPPERNAME).o
-JDK_HOME = $(shell dirname $$(readlink -f `which java`))/../../
+JDK_HOME = $(shell dirname $$(readlink -f `which javac`))/..
 INCLUDEDIRS = -I$(JDK_HOME)/include -I$(JDK_HOME)/include/linux -I../include
 CXXFLAGS = -g -std=c++11 -fPIC -Wall -fno-strict-aliasing $(INCLUDEDIRS) -Wno-unused-function
 LDLIBS = -ladaptmgr -lyaml-cpp -lboost_system -lboost_filesystem

@@ -23,12 +23,20 @@
 
 namespace pladapt {
 
-double UtilityFunction::getMultiplicativeUtility(const Configuration& config, const Environment& env, int time) const {
+double UtilityFunction::getAdditiveUtility(const Configuration& config, const Environment& environment, int time) const {
+	return 0.0;
+}
+
+double UtilityFunction::getMultiplicativeUtility(const Configuration& config, const Environment& environment, int time) const {
     return 1.0;
 }
 
-double UtilityFunction::getFinalReward(const Configuration& config, const Environment& env, int time) const {
+double UtilityFunction::getFinalReward(const Configuration& config, const Environment& environment, int time) const {
     return 0.0;
+}
+
+double UtilityFunction::getAdaptationReward(const Configuration& from, const Configuration& to, int time) const {
+	return 0.0;
 }
 
 

@@ -40,6 +40,8 @@ public:
 	virtual void printOn(std::ostream& os) const;
     virtual double asDouble() const;
 
+    virtual EnvironmentClass getType() const;
+
 	inline bool isEqual(const GenericEnvironment& other) {
 		return GenericEnvironment::equals(other);
 	}

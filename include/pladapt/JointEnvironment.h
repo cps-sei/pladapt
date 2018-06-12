@@ -34,6 +34,7 @@ public:
 	virtual unsigned getNumberOfComponents() const;
 	virtual const Environment& getComponent(unsigned c) const;
 	virtual void printOn(std::ostream& os) const;
+	virtual EnvironmentClass getType() const;
 	virtual ~JointEnvironment();
 
 protected:

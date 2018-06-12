@@ -28,24 +28,31 @@ GenericUtilityFunction::~GenericUtilityFunction() {
 }
 
 double GenericUtilityFunction::getAdditiveUtility(const Configuration& config,
-		const Environment& env, int time) const {
+		const Environment& environment, int time) const {
 	return getGenAdditiveUtility(
 			dynamic_cast<const GenericConfiguration&>(config),
-			dynamic_cast<const GenericEnvironment&>(env), time);
+			dynamic_cast<const GenericEnvironment&>(environment), time);
 }
 
 double GenericUtilityFunction::getMultiplicativeUtility(
-		const Configuration& config, const Environment& env, int time) const {
+		const Configuration& config, const Environment& environment, int time) const {
 	return getGenMultiplicativeUtility(
 			dynamic_cast<const GenericConfiguration&>(config),
-			dynamic_cast<const GenericEnvironment&>(env), time);
+			dynamic_cast<const GenericEnvironment&>(environment), time);
 }
 
 double GenericUtilityFunction::getFinalReward(const Configuration& config,
-		const Environment& env, int time) const {
+		const Environment& environment, int time) const {
 	return getGenFinalReward(
 			dynamic_cast<const GenericConfiguration&>(config),
-			dynamic_cast<const GenericEnvironment&>(env), time);
+			dynamic_cast<const GenericEnvironment&>(environment), time);
+}
+
+double GenericUtilityFunction::getAdaptationReward(const Configuration& from,
+		const Configuration& to, int time) const {
+	return getGenAdaptationReward(
+			dynamic_cast<const GenericConfiguration&>(from),
+			dynamic_cast<const GenericConfiguration&>(to), time);
 }
 
 double GenericUtilityFunction::getGenAdditiveUtility(
@@ -60,6 +67,11 @@ double GenericUtilityFunction::getGenMultiplicativeUtility(
 
 double GenericUtilityFunction::getGenFinalReward(const GenericConfiguration& config,
 		const GenericEnvironment& environment, int time) const {
+	return 0.0;
+}
+
+double GenericUtilityFunction::getGenAdaptationReward(
+		const GenericConfiguration& from, const GenericConfiguration& to, int time) const {
 	return 0.0;
 }
 

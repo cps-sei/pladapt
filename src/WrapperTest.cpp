@@ -21,6 +21,7 @@
 
 
 #include <pladapt/GenericUtilityFunction.h>
+#include <pladapt/GenericConfigurationManager.h>
 #include <iostream>
 
 using namespace std;
@@ -29,6 +30,17 @@ namespace pladapt {
 
 double testGeneric(const GenericUtilityFunction& u, const GenericConfiguration& c, const GenericEnvironment& e) {
 	cout << "testGeneric(u," << c << "," << e << ")" << endl;
+	return u.getAdditiveUtility(c, e, 0) * u.getMultiplicativeUtility(c, e, 0) + u.getFinalReward(c, e, 0);
+}
+
+double testUtilityFunction(const UtilityFunction& u, const Configuration& c, const Environment& e) {
+	cout << "testUtilityFunction(u," << c << "," << e << ")" << endl;
+	return u.getAdditiveUtility(c, e, 0) * u.getMultiplicativeUtility(c, e, 0) + u.getFinalReward(c, e, 0);
+}
+
+double testUtilityFunctionWithConfigMgr(const UtilityFunction& u, const GenericConfigurationManager& cm, const Environment& e) {
+	const Configuration& c = cm.getConfigurationSpace().getConfiguration(0);
+	cout << "testUtilityFunctionWithConfigMgr(u," << c << "," << e << ")" << endl;
 	return u.getAdditiveUtility(c, e, 0) * u.getMultiplicativeUtility(c, e, 0) + u.getFinalReward(c, e, 0);
 }
 

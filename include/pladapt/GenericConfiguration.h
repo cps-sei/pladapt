@@ -34,6 +34,8 @@ public:
 	inline bool isEqual(const GenericConfiguration& other) {
 		return GenericConfiguration::equals(other);
 	}
+	virtual ConfigurationClass getType() const;
+
 protected:
 	virtual bool equals(const Configuration& other) const;
 };

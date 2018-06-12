@@ -47,6 +47,10 @@ double GenericEnvironment::asDouble() const {
 	return get<double>(doubleProperty);
 }
 
+Environment::EnvironmentClass GenericEnvironment::getType() const {
+	return Environment::C_GENERIC_ENVIRONMENT;
+}
+
 bool GenericEnvironment::equals(const Environment& other) const {
     try {
         const GenericEnvironment& otherConf = dynamic_cast<const GenericEnvironment&>(other);

@@ -39,9 +39,18 @@ namespace pladapt {
  */
 class Configuration {
 public:
+
+	/**
+	 * Enum for down-casting in Java
+	 *
+	 * To avoid using RTTI and still be able to down-cast correctly in Java
+	 */
+	enum ConfigurationClass { C_CONFIGURATION, C_GENERIC_CONFIGURATION };
+
 	bool operator==(const Configuration& other) const;
     virtual void printOn(std::ostream& os) const = 0;
     friend std::ostream& operator<<(std::ostream& os, const Configuration& config);
+	virtual ConfigurationClass getType() const;
 
     virtual ~Configuration();
 

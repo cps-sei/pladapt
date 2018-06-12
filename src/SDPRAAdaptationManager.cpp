@@ -51,6 +51,10 @@ void SDPRAAdaptationManager::initialize(std::shared_ptr<const ConfigurationManag
 TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigObj, const EnvironmentDTMCPartitioned& envDTMC,
         const UtilityFunction& utilityFunction, unsigned horizon) {
 
+	if (horizon == 0) {
+		throw std::invalid_argument("SDPAdaptationManager::evaluate() called with horizon = 0");
+	}
+
 	/* check if we need to adjust the horizon to the environment size */
 	if ((envDTMC.getNumberOfParts() - 1) < horizon) {
 		if (envDTMC.getNumberOfParts() > 1 && envDTMC.isLastPartFinal()) {
@@ -181,13 +185,14 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
 
                 double maxUtil = -DBL_MAX;
                 double surviveForMax = 0.0;
+                bool firstReachableState = true;
 
                 for (unsigned nextS = 0; nextS < configSpace.size(); nextS++) {
                     if ((t == 0 && !isReachableImmediately(s, nextS))
                             || (t > 0 && !isReachableFromConfig(s, nextS))) {
                         continue;
                     }
-                    double util = 0;
+                    double util = utilityFunction.getAdaptationReward(config, configSpace.getConfiguration(nextS), t);
 #if WORST_CASE
                     double survive = 1.0;
 #else
@@ -225,10 +230,10 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
                         continue;
                     }
 
-                    if (util >= maxUtil) {
+                    if (firstReachableState || util >= maxUtil) {
 
                         // for equal utility, prefer the current configuration
-                        if (nextS == currentConfig || util > maxUtil) {
+                        if (firstReachableState || nextS == currentConfig || util > maxUtil) {
                             maxUtil = util;
                             surviveForMax = survive;
 #if EXTRACT_POLICY
@@ -236,6 +241,7 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
 #endif
                         }
                     }
+                    firstReachableState = false;
                 }
 
                 if (maxUtil > -DBL_MAX) {
@@ -487,7 +493,7 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
                     	hasValidNextState = true;
                     }
 
-                    double util = 0;
+                    double util = utilityFunction.getAdaptationReward(config, configSpace.getConfiguration(nextS), t);
 #if WORST_CASE
                     double survive = 1.0;
 #else

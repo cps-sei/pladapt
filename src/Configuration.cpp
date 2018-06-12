@@ -32,6 +32,10 @@ std::ostream& operator<<(std::ostream& os, const Configuration& config) {
     return os;
 }
 
+Configuration::ConfigurationClass Configuration::getType() const {
+	return C_CONFIGURATION;
+}
+
 Configuration::~Configuration() {
 }
 

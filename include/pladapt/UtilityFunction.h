@@ -38,14 +38,25 @@ public:
 	 *
 	 * @param time time (in steps) since the beginning of the horizon
 	 */
-	virtual double getAdditiveUtility(const Configuration& config, const Environment& env, int time) const = 0;
+	virtual double getAdditiveUtility(const Configuration& config, const Environment& environment, int time) const;
 
-    virtual double getMultiplicativeUtility(const Configuration& config, const Environment& env, int time) const;
+    virtual double getMultiplicativeUtility(const Configuration& config, const Environment& environment, int time) const;
 
     /**
      * This is added to the additive utility only in the final stage (the end of the horizon)
      */
-    virtual double getFinalReward(const Configuration& config, const Environment& env, int time) const;
+    virtual double getFinalReward(const Configuration& config, const Environment& environment, int time) const;
+
+    /**
+     * Returns the reward of adapting from one configuration to another
+     *
+     * Typically this will return a cost (i.e., a negative reward)
+     * This, for example could return the cost of the tactics needed to trigger
+     * the transition between these two configurations
+     *
+     * This is only used by PLA-SDP
+     */
+    virtual double getAdaptationReward(const Configuration& from, const Configuration& to, int time) const;
 
 	virtual ~UtilityFunction();
 };
