@@ -35,7 +35,7 @@ Adjusts the latency of changing altitude. Given in *seconds* where the planning 
 Set the horizontal width of the map
 
 ### `--square-map`
-Set the altitude to match the width of the map
+Creates an additional dimension for the drones to travel on. This is equivalent to squaring the map size as there are no lateral movement tactics and the system cannot monitor laterally. The drones route set to fill the x-y plane.
 
 ### `--num-targets=value`
 Set the number of targets generated
