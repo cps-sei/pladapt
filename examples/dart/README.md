@@ -1,7 +1,7 @@
 
 # Command Line Options
 
-###`--help`
+### `--help`
 Lists all command line arguments
 
 ### `--prism-template=value`
