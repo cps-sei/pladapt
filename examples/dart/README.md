@@ -48,10 +48,10 @@ Set the number of targets generated
 Set the number of threats generated
 
 ### `--altitude-levels=value`
-Set the number of altitude level that the drones can use.
+Set the number of altitude levels that the drones can use.
 
 ### `--threat-range=value`
-Set the range of the threats in altitude units. Use `--auto-range` to
+Set the range of the threats in altitude levels. Use `--auto-range` to
 automatically adjust this to the number of altitude levels.
 
 ### `--threat-sensor-fpr=value`, `--threat-sensor-fnr=value`
@@ -75,7 +75,7 @@ Set the random seed that all random behavior deterministically stems from.
 
 ### `--ecm`
 Add the ECM (Electronic Countermeasures) tactic. When used, it reduces the the
-chance of target detection and destruction
+chance of both target detection and destruction by threats
 
 ### `--two-level-tactics`
 Allow the adaptation manager to move 2 altitude levels in a single period of
