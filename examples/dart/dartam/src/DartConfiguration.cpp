@@ -55,22 +55,22 @@ DartConfiguration::Formation DartConfiguration::getFormation() const {
 	return formation;
 }
 
-// Returns the number of periods until the adaptation is complete
+// Returns the number of periods until the adaptation tactic completes
 unsigned DartConfiguration::getTtcDecAlt() const {
 	return ttcDecAlt;
 }
 
-// Returns the number of periods until the adaptation is complete
+// Returns the number of periods until the adaptation tactic completes
 unsigned DartConfiguration::getTtcIncAlt() const {
 	return ttcIncAlt;
 }
 
-// Returns the number of periods until the adaptation is complete
+// Returns the number of periods until the adaptation tactic completes
 unsigned DartConfiguration::getTtcDecAlt2() const {
 	return ttcDecAlt2;
 }
 
-// Returns the number of periods until the adaptation is complete
+// Returns the number of periods until the adaptation tactic completes
 unsigned DartConfiguration::getTtcIncAlt2() const {
 	return ttcIncAlt2;
 }
