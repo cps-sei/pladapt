@@ -4,6 +4,7 @@
 .deps/
 .dirstamp
 /build/
+/html/
 Makefile
 !*.cpp
 !.cproject

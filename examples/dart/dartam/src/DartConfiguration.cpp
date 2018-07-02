@@ -2,7 +2,7 @@
  * PLA Adaptation Manager
  *
  * Copyright 2017 Carnegie Mellon University. All Rights Reserved.
- * 
+ *
  * NO WARRANTY. THIS CARNEGIE MELLON UNIVERSITY AND SOFTWARE ENGINEERING
  * INSTITUTE MATERIAL IS FURNISHED ON AN "AS-IS" BASIS. CARNEGIE MELLON
  * UNIVERSITY MAKES NO WARRANTIES OF ANY KIND, EITHER EXPRESSED OR IMPLIED, AS
@@ -55,18 +55,22 @@ DartConfiguration::Formation DartConfiguration::getFormation() const {
 	return formation;
 }
 
+// Returns the number of periods until the adaptation tactic completes
 unsigned DartConfiguration::getTtcDecAlt() const {
 	return ttcDecAlt;
 }
 
+// Returns the number of periods until the adaptation tactic completes
 unsigned DartConfiguration::getTtcIncAlt() const {
 	return ttcIncAlt;
 }
 
+// Returns the number of periods until the adaptation tactic completes
 unsigned DartConfiguration::getTtcDecAlt2() const {
 	return ttcDecAlt2;
 }
 
+// Returns the number of periods until the adaptation tactic completes
 unsigned DartConfiguration::getTtcIncAlt2() const {
 	return ttcIncAlt2;
 }
@@ -117,4 +121,3 @@ bool DartConfiguration::equals(const Configuration& other) const {
 
 } /* namespace am2 */
 } /* namespace dart */
-
