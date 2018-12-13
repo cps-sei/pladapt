@@ -1,4 +1,4 @@
-CXXFLAGS=-std=c++11 -O3 -Wall -fmessage-length=0
+CXXFLAGS=-std=c++11 -O3 -Wall -fmessage-length=0 -g
 
 OBJS=main.o Simulation.o
 LDLIBS=-ldartam
