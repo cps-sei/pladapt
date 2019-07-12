@@ -62,7 +62,7 @@ make
 
 ### Compiling the Java wrapper
 This is only needed to use the library from Rainbow (or other Java-based self-adaptation frameworks).
-In addition to the previous dependencies, [SWIG](http://www.swig.org/) version 3.0.10 or later must be installed.
+In addition to the previous dependencies, [SWIG](http://www.swig.org/) version 3.0.12 must be installed.
 
 
 After compiling the library do:
