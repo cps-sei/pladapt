@@ -10,7 +10,6 @@ Makefile
 !.cproject
 !.project
 *~
-.settings
 
 # http://www.gnu.org/software/automake
 
