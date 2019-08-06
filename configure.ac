@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.59)
-AC_INIT(adaptmgr, 1.0, https://bitbucket.org/gamoreno/adaptmgr/issues)
+AC_INIT(adaptmgr, 1.0, https://github.com/cps-sei/pladapt/issues)
 
 AC_CANONICAL_SYSTEM
 
