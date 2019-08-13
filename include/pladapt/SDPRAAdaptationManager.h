@@ -23,6 +23,7 @@
 #define SDPRAADAPTATIONMANAGER_H_
 
 #include <pladapt/SDPAdaptationManager.h>
+#include <vector>
 
 namespace pladapt {
 
@@ -38,10 +39,23 @@ public:
     virtual bool supportsStrategy() const;
     virtual std::shared_ptr<Strategy> getStrategy();
 
+    struct SurvivalInfo {
+    	TacticList tactics;
+    	double probability;
+    	bool operator<(const SurvivalInfo& other) const {
+    		return tactics < other.tactics;
+    	}
+    };
+
+    std::set<SurvivalInfo> getSurvivalInfo() const;
+
     virtual ~SDPRAAdaptationManager();
 
 protected:
     double survivalRequirement = 1.0;
+
+    unsigned lastCurrentConfig; // currentConfig in last call to evaluate
+    std::vector<double> survivalProbs;
 
     virtual TacticList evaluate2(const Configuration& currentConfigObj, const EnvironmentDTMCPartitioned& envDTMC,
             const UtilityFunction& utilityFunction, unsigned horizon);

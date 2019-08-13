@@ -69,6 +69,10 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
         cout << "current config: " << currentConfigObj << " (" << currentConfig << ')' << endl;
     }
 
+	lastCurrentConfig = currentConfig;
+    survivalProbs.clear();
+	survivalProbs.resize(configSpace.size(), 0.0);
+
     typedef std::pair<unsigned, unsigned> SystemEnvPair; // (sysIndex, envIndex)
     typedef map<SystemEnvPair, double> StateUtility;
 
@@ -117,6 +121,7 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
         }
     }
 
+    // for t=H..1,0 (in the paper 0 is a separate case)
     while (t > 0) {
         t--;
         if (debug) {
@@ -132,6 +137,7 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
         pSurvive.reset(new StateUtility);
 
 
+        // \forall c \in C
         for (unsigned s = 0; s < configSpace.size(); s++) {
 
             // t = 0 is now before adapting, so only the current config is valid
@@ -156,6 +162,7 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
 
             const Configuration& config = configSpace.getConfiguration(s);
 
+            // \forall e \in E_t
             unsigned partIndex = min(t, envDTMC.getNumberOfParts() - 1);
             const DTMCPartitionedStates::Part& envPart = envDTMC.getPart(partIndex);
             for (DTMCPartitionedStates::Part::const_iterator envState = envPart.begin();
@@ -187,6 +194,7 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
                 double surviveForMax = 0.0;
                 bool firstReachableState = true;
 
+                // c' \in C^T(c)
                 for (unsigned nextS = 0; nextS < configSpace.size(); nextS++) {
                     if ((t == 0 && !isReachableImmediately(s, nextS))
                             || (t > 0 && !isReachableFromConfig(s, nextS))) {
@@ -198,6 +206,7 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
 #else
                     double survive = 0;
 #endif
+                    // \sum_{e' \in E_{t+1}} p(e'|e) S^{t+1}(c',e')
                     unsigned nextPartIndex = min(t + 1, envDTMC.getNumberOfParts() - 1);
                     const DTMCPartitionedStates::Part& nextEnvPart = envDTMC.getPart(nextPartIndex);
                     for (DTMCPartitionedStates::Part::const_iterator nextEnvState = nextEnvPart.begin();
@@ -219,6 +228,11 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
                                     << ',' << envDTMC.getStateValue(nextSysEnvPair.second) << " at t=" << t + 1 << endl;
                             assert(false);
                         }
+                    } // \sum_{e' \in E_{t+1}} p(e'|e) S^{t+1}(c',e')
+
+
+                    if (t==0) {
+                    	survivalProbs[nextS] = survive;
                     }
 
                     if (survive < survivalRequirement) {
@@ -242,7 +256,7 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
                         }
                     }
                     firstReachableState = false;
-                }
+                } // c' \in C^T(c)
 
                 if (maxUtil > -DBL_MAX) {
                     maxUtil = multiplicativeUtil * (localUtil + maxUtil);
@@ -267,9 +281,9 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
                     return evaluate2(currentConfigObj, envDTMC, utilityFunction, horizon);
                 }
 #endif
-            }
-        }
-    }
+            } // \forall e \in E_t
+        } // \forall c \in C
+    } // for t=H..1,0 (in the paper 0 is a separate case)
 
     // now we need to find the best initial state
     unsigned bestInitialState = policy[0][currentConfig];
@@ -349,6 +363,9 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
     if (debug) {
         cout << "current config: " << currentConfigObj << " (" << currentConfig << ')' << endl;
     }
+
+	survivalProbs.clear();
+	survivalProbs.resize(configSpace.size(), 0.0);
 
     typedef std::pair<unsigned, unsigned> SystemEnvPair; // (sysIndex, envIndex)
     typedef map<SystemEnvPair, double> StateUtility;
@@ -523,6 +540,10 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
                         }
                     }
 
+                    if (t==0) {
+                    	survivalProbs[nextS] = survive;
+                    }
+
                     if (survive < survivalRequirement) { // this had t > 0 &&
                         if (debug) {
                             cout << "\t->" << configSpace.getConfiguration(nextS) << '(' <<nextS << ')'
@@ -646,6 +667,29 @@ bool SDPRAAdaptationManager::supportsStrategy() const {
 std::shared_ptr<Strategy> SDPRAAdaptationManager::getStrategy() {
 	return std::shared_ptr<Strategy>();
 }
+
+std::set<SDPRAAdaptationManager::SurvivalInfo> SDPRAAdaptationManager::getSurvivalInfo() const {
+	std::set<SurvivalInfo> info;
+
+	// add an entry for each immediately reachable state
+	const ReachabilityRelation::ReachableList& reachable = pImmediateReachabilityRelation->getReachableFrom(lastCurrentConfig);
+//	cout << "getSurvivalInfo() from " << pConfigMgr->getConfigurationSpace().getConfiguration(lastCurrentConfig)
+//			<< " reachables:" << endl;
+	for (ReachabilityRelation::ReachableList::const_iterator entry = reachable.begin(); entry != reachable.end(); ++entry) {
+//		cout << "to: " << pConfigMgr->getConfigurationSpace().getConfiguration(entry->configIndex)
+//				<< " tactics: ";
+//		for (const auto& t : entry->tactics) {
+//			cout << ' ' << t;
+//		}
+//		cout << endl;
+		SurvivalInfo infoEntry;
+		infoEntry.probability = survivalProbs[entry->configIndex];
+		infoEntry.tactics = entry->tactics;
+		info.insert(infoEntry);
+	}
+	return info;
+}
+
 
 SDPRAAdaptationManager::~SDPRAAdaptationManager() {
     // TODO Auto-generated destructor stub

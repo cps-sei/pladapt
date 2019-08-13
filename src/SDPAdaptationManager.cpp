@@ -46,7 +46,7 @@ const char* SDPAdaptationManager::REACH_PATH = "reachPath";
 const char* SDPAdaptationManager::REACH_PREFIX = "reachPrefix";
 const char* SDPAdaptationManager::REACH_MODEL = "reachModel";
 const char* SDPAdaptationManager::REACH_SCOPE = "reachScope";
-
+const char* SDPAdaptationManager::IMPROVEMENT_THRESHOLD = "improvementThreshold";
 
 SDPAdaptationManager::SDPAdaptationManager() {
 }
@@ -163,6 +163,11 @@ void SDPAdaptationManager::initialize(std::shared_ptr<const ConfigurationManager
     pConfigMgr = configMgr;
     this->params = params;
 
+    if (params[IMPROVEMENT_THRESHOLD].IsDefined()) {
+    	improvementThreshold = params[IMPROVEMENT_THRESHOLD].as<double>();
+    	cout << "improvementThreshold = " << improvementThreshold << endl;
+    }
+
     loadImmediateReachabilityRelation();
     loadReachabilityRelation();
 
@@ -246,6 +251,19 @@ TacticList SDPAdaptationManager::evaluate(const Configuration& currentConfigObj,
         }
     }
 
+    /* find the immediate next state after the current with nop tactic */
+    unsigned nopNextConfig = 0;
+    const ReachabilityRelation::ReachableList& reachable = pImmediateReachabilityRelation->getReachableFrom(currentConfig);
+    for (ReachabilityRelation::ReachableList::const_iterator entry = reachable.begin(); entry != reachable.end(); ++entry) {
+        if (entry->tactics.empty()) {
+        	nopNextConfig = entry->configIndex;
+        	break;
+        }
+    }
+
+    double maxUtil = -DBL_MAX; // at the end of the loop, it's the max expected utility
+    double nopUtil = -DBL_MAX; // et the end of the loop, it's the expected utility of nop tactic
+
     while (t > 0) {
         t--;
         if (debug) {
@@ -297,7 +315,7 @@ TacticList SDPAdaptationManager::evaluate(const Configuration& currentConfigObj,
 #if EXTRACT_POLICY
                 unsigned bestNextState = 0; // assume this for now
 #endif
-                double maxUtil = -DBL_MAX;
+                maxUtil = -DBL_MAX;
                 bool firstReachableState = true;
 
                 for (unsigned nextS = 0; nextS < configSpace.size(); nextS++) {
@@ -321,6 +339,10 @@ TacticList SDPAdaptationManager::evaluate(const Configuration& currentConfigObj,
                                     << ',' << envDTMC.getStateValue(nextSysEnvPair.second) << " at t=" << t + 1 << endl;
                             assert(false);
                         }
+                    }
+
+                    if (t == 0 && nextS == nopNextConfig) {
+                    	nopUtil = util;
                     }
 
                     if (firstReachableState || util >= maxUtil) {
@@ -367,7 +389,11 @@ TacticList SDPAdaptationManager::evaluate(const Configuration& currentConfigObj,
     }
 
     // now we need to find the best initial state
-    unsigned bestInitialState = policy[0][currentConfig];
+    unsigned bestInitialState = nopNextConfig;
+    if (maxUtil > nopUtil + improvementThreshold) {
+//    	cout << "threshold=" << maxUtil - nopUtil << endl;
+        bestInitialState = policy[0][currentConfig];
+    }
 
 #if SUPPORTS_GET_STRATEGY
     lastStrategy = make_shared<Strategy>();
@@ -381,7 +407,6 @@ TacticList SDPAdaptationManager::evaluate(const Configuration& currentConfigObj,
     // find the tactics that should be started, if any
     TacticList tactics;
     bool foundEntry = false;
-    const ReachabilityRelation::ReachableList& reachable = pImmediateReachabilityRelation->getReachableFrom(currentConfig);
     for (ReachabilityRelation::ReachableList::const_iterator entry = reachable.begin(); entry != reachable.end(); ++entry) {
         if (entry->configIndex == bestInitialState) {
             foundEntry = true;

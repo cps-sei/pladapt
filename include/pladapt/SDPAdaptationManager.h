@@ -68,6 +68,8 @@ class SDPAdaptationManager : public AdaptationManager
     std::shared_ptr<const ConfigurationManager> pConfigMgr;
     YAML::Node params;
 
+    double improvementThreshold = 0.0;
+
     std::shared_ptr<Strategy> lastStrategy; /**< last strategy computed by evaluate() */
 
     /**
@@ -102,6 +104,7 @@ class SDPAdaptationManager : public AdaptationManager
     static const char* REACH_PREFIX;
     static const char* REACH_MODEL;
     static const char* REACH_SCOPE;
+    static const char* IMPROVEMENT_THRESHOLD;
 
     SDPAdaptationManager();
 
@@ -114,6 +117,9 @@ class SDPAdaptationManager : public AdaptationManager
      *   	R^T = R^I. Also, "-nl" will be appended to REACH_MODEL before loading it
      *   REACH_OPTIONS: options for reach.sh
      *   REACH_PREFIX: prefix to distinguish yaml files from concurrent processes
+     * optional parameters:
+     *   IMPROVEMENT_THRESHOLD: return a tactic only if the expected utility improvement
+     *   	compared to the null tactic is greater than this value (default is 0.0)
      */
     virtual void initialize(std::shared_ptr<const ConfigurationManager> configMgr, const YAML::Node& params);
     virtual TacticList evaluate(const Configuration& currentConfigObj, const EnvironmentDTMCPartitioned& envDTMC,
