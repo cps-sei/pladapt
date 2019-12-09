@@ -200,6 +200,9 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
                             || (t > 0 && !isReachableFromConfig(s, nextS))) {
                         continue;
                     }
+                    if (debug) {
+                    	cout << "nextS=" << nextS << endl;
+                    }
                     double util = utilityFunction.getAdaptationReward(config, configSpace.getConfiguration(nextS), t);
 #if WORST_CASE
                     double survive = 1.0;
@@ -220,6 +223,12 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
                             survive = min(survive, multiplicativeUtil * envDTMC.getTransitionMatrix()(*envState, *nextEnvState)
                                             * pNextSurvive->at(nextSysEnvPair));
 #else
+                            if (false && t==3 && s==18 && nextS==26 ) {
+                                cout << "survive += " << multiplicativeUtil << " * " << envDTMC.getTransitionMatrix()(*envState, *nextEnvState)
+                                               << " * " << pNextSurvive->at(nextSysEnvPair)
+											   << " pair " << nextSysEnvPair.first << "," << nextSysEnvPair.second
+											   << endl;
+                            }
                             survive += multiplicativeUtil * envDTMC.getTransitionMatrix()(*envState, *nextEnvState)
                                             * pNextSurvive->at(nextSysEnvPair);
 #endif
@@ -235,11 +244,19 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
                     	survivalProbs[nextS] = survive;
                     }
 
+                    if (debug) {
+                        cout << "\t*->" << '(' << nextS << ')'
+                        		<< " util=" << util
+    							<< " survProb=" << survive
+                                << endl;
+                    }
+
+
                     if (survive < survivalRequirement) {
                         if (debug) {
                             cout << "\t->" << configSpace.getConfiguration(nextS) << '(' <<nextS << ')'
                                     << " does not meet survival survival=" << survive
-                                    << " < " << survivalRequirement << endl;
+                                    << " < " << survivalRequirement << " multiplicativeUtil=" << multiplicativeUtil << endl;
                         }
                         continue;
                     }

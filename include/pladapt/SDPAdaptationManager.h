@@ -71,6 +71,11 @@ class SDPAdaptationManager : public AdaptationManager
     double improvementThreshold = 0.0;
 
     std::shared_ptr<Strategy> lastStrategy; /**< last strategy computed by evaluate() */
+    std::vector<std::vector<unsigned>> policy;
+    std::vector<std::vector<double>> lastUtility;
+
+    unsigned lastCurrentConfig; // currentConfig in last call to evaluate
+    std::vector<double> expectedUtil;
 
     /**
      * Executes Alloy to generate pImmediateReachabilityRelation and pReachableImmediately
@@ -126,6 +131,28 @@ class SDPAdaptationManager : public AdaptationManager
     		const UtilityFunction& utilityFunction, unsigned horizon);
     virtual bool supportsStrategy() const;
     virtual std::shared_ptr<Strategy> getStrategy();
+
+    struct ExpectedUtilityInfo {
+    	TacticList tactics;
+    	double utility;
+    	bool operator<(const ExpectedUtilityInfo& other) const {
+    		return tactics < other.tactics;
+    	}
+    };
+
+    std::set<ExpectedUtilityInfo> getExpectedUtilityInfo() const;
+
+    /**
+     * function to evaluate expected reward over a path
+     */
+    double evaluateStrategy(const Configuration& currentConfigObj,
+                          const EnvironmentDTMCPartitioned& envDTMC,
+                          const UtilityFunction& utilityFunction,
+                          unsigned horizon,
+                          const std::shared_ptr<Strategy> strategy);
+
+    void printPolicy(const TacticList& firstTactics) const;
+
     virtual ~SDPAdaptationManager();
 };
 

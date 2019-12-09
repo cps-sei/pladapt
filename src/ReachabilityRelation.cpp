@@ -97,6 +97,11 @@ std::size_t ReachabilityRelation::getReachableFrom(std::size_t configIndex, cons
 	}
 
 	// no reachable configurations were found.
+	cout << "getReachableFrom(" << configIndex << ",";
+	for (auto &t : tactics) {
+		cout << ' ' << t;
+	}
+	cout << ") returning " << "lib INVALID=" << INVALID << endl;
 	return INVALID;
 }
 

@@ -4,7 +4,7 @@
 AUTOMAKE_OPTIONS = subdir-objects
 lib_LIBRARIES = libadaptmgr.a
 
-AM_CPPFLAGS = -std=c++0x -I$(top_srcdir)/include -O3 -Wall -fPIC
+AM_CPPFLAGS = -std=c++14 -I$(top_srcdir)/include -O3 -Wall -fPIC
 ARFLAGS = cr
 
 libadaptmgr_a_SOURCES = AdaptationManager.cpp Configuration.cpp \
