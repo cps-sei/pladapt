@@ -229,7 +229,7 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
 											   << " pair " << nextSysEnvPair.first << "," << nextSysEnvPair.second
 											   << endl;
                             }
-                            survive += multiplicativeUtil * envDTMC.getTransitionMatrix()(*envState, *nextEnvState)
+                            survive += envDTMC.getTransitionMatrix()(*envState, *nextEnvState)
                                             * pNextSurvive->at(nextSysEnvPair);
 #endif
                         } catch(...) {
@@ -239,6 +239,9 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
                         }
                     } // \sum_{e' \in E_{t+1}} p(e'|e) S^{t+1}(c',e')
 
+
+                    // s(c,e) \sum_{e' \in E_{t+1}} p(e'|e) S^{t+1}(c',e')
+                    survive *= multiplicativeUtil;
 
                     if (t==0) {
                     	survivalProbs[nextS] = survive;
@@ -277,14 +280,19 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
 
                 if (maxUtil > -DBL_MAX) {
                     maxUtil = multiplicativeUtil * (localUtil + maxUtil);
-                } // otherwise, C_T^t(c,e) = \emptyset
-
-                if (debug) {
-                    cout << "\t->" << configSpace.getConfiguration(bestNextState) << '(' << bestNextState << ')'
-                    		<< " util=" << maxUtil << " locUtil=" << localUtil << " multUtil=" << multiplicativeUtil
-							<< " survProb=" << surviveForMax
-                            << " env=" << envDTMC.getStateValue(*envState)
-                            << endl;
+                    if (debug) {
+                        cout << "\t->" << configSpace.getConfiguration(bestNextState) << '(' << bestNextState << ')'
+                        		<< " util=" << maxUtil << " locUtil=" << localUtil << " multUtil=" << multiplicativeUtil
+    							<< " survProb=" << surviveForMax
+                                << " env=" << envDTMC.getStateValue(*envState)
+                                << endl;
+                    }
+                } else { // otherwise, C_T^t(c,e) = \emptyset
+                	if (debug) {
+                		assert(firstReachableState);
+						cout << "\t-> no next state meets survivability requirement for env="
+								<< envDTMC.getStateValue(*envState) << endl;
+					}
                 }
 
                 assert(pUtil->find(SystemEnvPair(s, *envState)) == pUtil->end());
@@ -381,7 +389,8 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
         cout << "current config: " << currentConfigObj << " (" << currentConfig << ')' << endl;
     }
 
-	survivalProbs.clear();
+	lastCurrentConfig = currentConfig;
+    survivalProbs.clear();
 	survivalProbs.resize(configSpace.size(), 0.0);
 
     typedef std::pair<unsigned, unsigned> SystemEnvPair; // (sysIndex, envIndex)
@@ -432,6 +441,7 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
         }
     }
 
+    // for t=H..1,0 (in the paper 0 is a separate case)
     while (t > 0) {
         t--;
         if (debug) {
@@ -447,6 +457,7 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
         pSurvive.reset(new StateUtility);
 
 
+        // \forall c \in C
         for (unsigned s = 0; s < configSpace.size(); s++) {
 
             // t = 0 is now before adapting, so only the current config is valid
@@ -471,6 +482,7 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
 
             const Configuration& config = configSpace.getConfiguration(s);
 
+            // \forall e \in E_t
             unsigned partIndex = min(t, envDTMC.getNumberOfParts() - 1);
             const DTMCPartitionedStates::Part& envPart = envDTMC.getPart(partIndex);
             for (DTMCPartitionedStates::Part::const_iterator envState = envPart.begin();
@@ -483,17 +495,9 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
                 assert(t > 0 || *envState == 0); // we should only have the root env state at t=0
 
 #if EXTRACT_POLICY
-                unsigned bestNextState = 0; // assume this for now'
+                unsigned bestNextState = 0; // assume this for now
 #endif
 
-                /*
-                 * In this solution approach, it is possible that no next state will satisfy the
-                 * survivability requirement. Therefore, we cannot count on bestNextState and
-                 * maxSurviveConf getting set to some valid next state. With this variable
-                 * we can make sure we choose a valid default in case no state satisfy the
-                 * requirements.
-                 */
-                bool hasValidNextState = false;
                 double localUtil = 0;
                 double multiplicativeUtil = 1.0;
                 /*
@@ -509,22 +513,15 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
 
                 double maxUtil = -DBL_MAX;
                 double surviveForMax = 0.0;
-                double maxSurvive = 0.0;
+                double maxSurvive = -1.0; // so that even a 0.0 replaces it
                 unsigned maxSurviveConf = 0;
                 double maxSurviveUtil = 0.0;
 
+                // c' \in C^T(c)
                 for (unsigned nextS = 0; nextS < configSpace.size(); nextS++) {
                     if ((t == 0 && !isReachableImmediately(s, nextS))
                             || (t > 0 && !isReachableFromConfig(s, nextS))) {
                         continue;
-                    }
-
-                    if (!hasValidNextState) {
-#if EXTRACT_POLICY
-                    	bestNextState = nextS;
-#endif
-                    	maxSurviveConf = nextS;
-                    	hasValidNextState = true;
                     }
 
                     double util = utilityFunction.getAdaptationReward(config, configSpace.getConfiguration(nextS), t);
@@ -533,7 +530,7 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
 #else
                     double survive = 0;
 #endif
-
+                    // \sum_{e' \in E_{t+1}} p(e'|e) S^{t+1}(c',e')
                     unsigned nextPartIndex = min(t + 1, envDTMC.getNumberOfParts() - 1);
                     const DTMCPartitionedStates::Part& nextEnvPart = envDTMC.getPart(nextPartIndex);
                     for (DTMCPartitionedStates::Part::const_iterator nextEnvState = nextEnvPart.begin();
@@ -555,7 +552,8 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
                                     << ',' << envDTMC.getStateValue(nextSysEnvPair.second) << " at t=" << t + 1 << endl;
                             assert(false);
                         }
-                    }
+                    } // \sum_{e' \in E_{t+1}} p(e'|e) S^{t+1}(c',e')
+
 
                     if (t==0) {
                     	survivalProbs[nextS] = survive;
@@ -567,10 +565,19 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
                                     << " does not meet survival survival=" << survive
                                     << " < " << survivalRequirement << endl;
                         }
-                        if (survive > maxSurvive) {
-                            maxSurvive = survive;
-                            maxSurviveConf = nextS;
-                            maxSurviveUtil = util;
+
+                        if (survive >= maxSurvive) {
+
+                        	// for equal survivability, prefer the highest utility
+                        	if (util >= maxSurviveUtil || survive > maxSurvive) {
+
+                        		// for equalt survivability and utility prefer current config
+                        		if (nextS == currentConfig || util > maxSurviveUtil) {
+									maxSurvive = survive;
+									maxSurviveConf = nextS;
+									maxSurviveUtil = util;
+                        		}
+                        	}
                         }
                     } else {
                         if (util >= maxUtil) {
@@ -590,8 +597,9 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
                 if (maxUtil == -DBL_MAX) { // none satisfied the survival requirement
                     maxUtil = maxSurviveUtil;
                     surviveForMax = maxSurvive;
-                    bestNextState = maxSurviveConf;
-
+#if EXTRACT_POLICY
+                   bestNextState = maxSurviveConf;
+#endif
                 }
                 maxUtil = multiplicativeUtil * (localUtil + maxUtil);
 
@@ -613,9 +621,9 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
                             << surviveForMax << '<' << survivalRequirement << endl;
                 }
 #endif
-            }
-        }
-    }
+            } // \forall e \in E_t
+        } // \forall c \in C
+    } // for t=H..1,0 (in the paper 0 is a separate case)
 
     // now we need to find the best initial state
     unsigned bestInitialState = policy[0][currentConfig];
