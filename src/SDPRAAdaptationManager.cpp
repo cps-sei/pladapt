@@ -192,6 +192,7 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
 
                 double maxUtil = -DBL_MAX;
                 double surviveForMax = 0.0;
+                double maximumSurvivalProbability = 0.0;
                 bool firstReachableState = true;
 
                 // c' \in C^T(c)
@@ -223,7 +224,7 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
                             survive = min(survive, multiplicativeUtil * envDTMC.getTransitionMatrix()(*envState, *nextEnvState)
                                             * pNextSurvive->at(nextSysEnvPair));
 #else
-                            if (false && t==3 && s==18 && nextS==26 ) {
+                            if (debug && t==0 && s==8 && nextS==9 ) {
                                 cout << "survive += " << multiplicativeUtil << " * " << envDTMC.getTransitionMatrix()(*envState, *nextEnvState)
                                                << " * " << pNextSurvive->at(nextSysEnvPair)
 											   << " pair " << nextSysEnvPair.first << "," << nextSysEnvPair.second
@@ -254,6 +255,7 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
                                 << endl;
                     }
 
+                    maximumSurvivalProbability = max(maximumSurvivalProbability, survive);
 
                     if (survive < survivalRequirement) {
                         if (debug) {
@@ -297,7 +299,12 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
 
                 assert(pUtil->find(SystemEnvPair(s, *envState)) == pUtil->end());
                 (*pUtil)[SystemEnvPair(s, *envState)] = maxUtil;
+#if 0
                 (*pSurvive)[SystemEnvPair(s, *envState)] = surviveForMax;
+#else
+	// fix in new paper (2020)
+                (*pSurvive)[SystemEnvPair(s, *envState)] = (surviveForMax > 0.0) ? surviveForMax : maximumSurvivalProbability;
+#endif
 #if EXTRACT_POLICY
                 policy[t][s] = bestNextState;
                 if (t == 0 && s == currentConfig && surviveForMax < survivalRequirement) {
