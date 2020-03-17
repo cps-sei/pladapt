@@ -143,17 +143,22 @@ void SDPAdaptationManager::loadReachabilityRelation() {
 
         unsigned numberOfStates = pReachableImmediately->size1();
         pReachableFromConfig.reset(new ReachabilityMatrix(numberOfStates, numberOfStates));
+//        cout << "building pReachableFromConfig:" << endl;
         for (unsigned i = 0; i < numberOfStates; i++) {
+//        	cout << "from: " << i;
             const ReachabilityRelation::ReachableList& reachable = pStepReachabilityRelation->getReachableFrom(i);
             if (!reachable.empty()) {
                 assert(reachable.size() == 1);
                 unsigned configAfterOneStep = reachable.front().configIndex;
+//                cout << " one step: " << configAfterOneStep << " then:";
                 for (unsigned j = 0; j < numberOfStates; j++) {
                     if (isReachableImmediately(configAfterOneStep, j)) {
+//                    	cout << " " << j;
                         (*pReachableFromConfig)(i,j) = true;
                     }
                 }
             }
+//            cout << endl;
         }
     }
 }
@@ -377,7 +382,7 @@ TacticList SDPAdaptationManager::evaluate(const Configuration& currentConfigObj,
                         }
                     }
                     firstReachableState = false;
-                }
+                } // max_{c' \in C^T(c)}
 
                 double localUtil = 0;
                 double multiplicativeUtil = 1.0;
@@ -395,9 +400,13 @@ TacticList SDPAdaptationManager::evaluate(const Configuration& currentConfigObj,
                 maxUtil = multiplicativeUtil * (localUtil + maxUtil);
 
                 if (debug) {
-                    cout << "\tt=" << t << " util=" << maxUtil << " locUtil=" << localUtil << " multUtil=" << multiplicativeUtil
+//                    cout << "\tt=" << t << " util=" << maxUtil << " locUtil=" << localUtil << " multUtil=" << multiplicativeUtil
+//                            << " env=" << envDTMC.getStateValue(*envState)
+//                            << " -> " << configSpace.getConfiguration(bestNextState) << '(' << bestNextState << ')' << endl;
+                    cout << "\t->" << configSpace.getConfiguration(bestNextState) << '(' << bestNextState << ')'
+                    		<< " util=" << maxUtil << " locUtil=" << localUtil << " multUtil=" << multiplicativeUtil
                             << " env=" << envDTMC.getStateValue(*envState)
-                            << " -> " << configSpace.getConfiguration(bestNextState) << '(' << bestNextState << ')' << endl;
+                            << endl;      
                 }
 
                 assert(pUtil->find(SystemEnvPair(s, *envState)) == pUtil->end());
@@ -405,9 +414,9 @@ TacticList SDPAdaptationManager::evaluate(const Configuration& currentConfigObj,
 #if EXTRACT_POLICY
                 policy[t][s] = bestNextState;
 #endif
-            }
-        }
-    }
+            } // \forall e \in E_t
+        } // \forall c \in C
+    } // for t=H..1,0 (in the paper 0 is a separate case)
 
     // now we need to find the best initial state
     unsigned bestInitialState = nopNextConfig;
@@ -576,15 +585,15 @@ std::set<SDPAdaptationManager::ExpectedUtilityInfo> SDPAdaptationManager::getExp
 
 	// add an entry for each immediately reachable state
 	const ReachabilityRelation::ReachableList& reachable = pImmediateReachabilityRelation->getReachableFrom(lastCurrentConfig);
-//	cout << "getSurvivalInfo() from " << pConfigMgr->getConfigurationSpace().getConfiguration(lastCurrentConfig)
-//			<< " reachables:" << endl;
+	cout << "getSurvivalInfo() from " << pConfigMgr->getConfigurationSpace().getConfiguration(lastCurrentConfig)
+			<< " reachables:" << endl;
 	for (ReachabilityRelation::ReachableList::const_iterator entry = reachable.begin(); entry != reachable.end(); ++entry) {
-//		cout << "to: " << pConfigMgr->getConfigurationSpace().getConfiguration(entry->configIndex)
-//				<< " tactics: ";
-//		for (const auto& t : entry->tactics) {
-//			cout << ' ' << t;
-//		}
-//		cout << endl;
+		cout << "to: " << pConfigMgr->getConfigurationSpace().getConfiguration(entry->configIndex)
+				<< " tactics: ";
+		for (const auto& t : entry->tactics) {
+			cout << ' ' << t;
+		}
+		cout << endl;
 		ExpectedUtilityInfo infoEntry;
 		infoEntry.utility = expectedUtil[entry->configIndex];
 		infoEntry.tactics = entry->tactics;
