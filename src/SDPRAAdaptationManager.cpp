@@ -378,7 +378,6 @@ TacticList SDPRAAdaptationManager::evaluate(const Configuration& currentConfigOb
 }
 
 
-
 TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigObj, const EnvironmentDTMCPartitioned& envDTMC,
         const UtilityFunction& utilityFunction, unsigned horizon) {
 
@@ -390,7 +389,7 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
 		}
 	}
 
-   const ConfigurationSpace& configSpace = pConfigMgr->getConfigurationSpace();
+    const ConfigurationSpace& configSpace = pConfigMgr->getConfigurationSpace();
     unsigned currentConfig = configSpace.getIndex(currentConfigObj);
     if (debug) {
         cout << "current config: " << currentConfigObj << " (" << currentConfig << ')' << endl;
@@ -530,7 +529,9 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
                             || (t > 0 && !isReachableFromConfig(s, nextS))) {
                         continue;
                     }
-
+                    if (debug) {
+                    	cout << "nextS=" << nextS << endl;
+                    }
                     double util = utilityFunction.getAdaptationReward(config, configSpace.getConfiguration(nextS), t);
 #if WORST_CASE
                     double survive = 1.0;
@@ -551,7 +552,7 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
                             survive = min(survive, multiplicativeUtil * envDTMC.getTransitionMatrix()(*envState, *nextEnvState)
                                             * pNextSurvive->at(nextSysEnvPair));
 #else
-                            survive += multiplicativeUtil * envDTMC.getTransitionMatrix()(*envState, *nextEnvState)
+                            survive += envDTMC.getTransitionMatrix()(*envState, *nextEnvState)
                                             * pNextSurvive->at(nextSysEnvPair);
 #endif
                         } catch(...) {
@@ -561,6 +562,9 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
                         }
                     } // \sum_{e' \in E_{t+1}} p(e'|e) S^{t+1}(c',e')
 
+
+                    // s(c,e) \sum_{e' \in E_{t+1}} p(e'|e) S^{t+1}(c',e')
+                    survive *= multiplicativeUtil;
 
                     if (t==0) {
                     	survivalProbs[nextS] = survive;
@@ -578,8 +582,8 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
                         	// for equal survivability, prefer the highest utility
                         	if (util >= maxSurviveUtil || survive > maxSurvive) {
 
-                        		// for equalt survivability and utility prefer current config
-                        		if (nextS == currentConfig || util > maxSurviveUtil) {
+                        		// for equal survivability and utility prefer current config
+                        		if (nextS == currentConfig || util > maxSurviveUtil || survive > maxSurvive) {
 									maxSurvive = survive;
 									maxSurviveConf = nextS;
 									maxSurviveUtil = util;
@@ -691,6 +695,7 @@ TacticList SDPRAAdaptationManager::evaluate2(const Configuration& currentConfigO
 
     return tactics;
 }
+
 
 bool SDPRAAdaptationManager::supportsStrategy() const {
 	return false;
