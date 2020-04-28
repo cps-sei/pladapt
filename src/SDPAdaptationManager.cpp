@@ -420,9 +420,12 @@ TacticList SDPAdaptationManager::evaluate(const Configuration& currentConfigObj,
 
     // now we need to find the best initial state
     unsigned bestInitialState = nopNextConfig;
-    if (maxUtil > nopUtil + improvementThreshold) {
-//    	cout << "threshold=" << maxUtil - nopUtil << endl;
+	cout << "threshold: maxUtil=" << maxUtil << " nopUtil=" << nopUtil;
+    if (maxUtil / nopUtil > 1.0 + improvementThreshold) {
+    	cout << "maxUtil improves" << endl;
         bestInitialState = policy[0][currentConfig];
+    } else {
+    	cout << "not enough improvement" << endl;
     }
 
 #if SUPPORTS_GET_STRATEGY
